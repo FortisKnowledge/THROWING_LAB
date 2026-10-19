@@ -63,6 +63,36 @@ body.go{background:radial-gradient(ellipse at 50% 58%,#0c1c33 0,#050911 62%,#020
 dl{margin:10px 0 18px}
 dl div{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
 dt{color:var(--mute)}dd{margin:0;font-weight:800;font-size:19px}
+/* 横画面：トレーニング画面だけを横長レイアウトにする。ホーム設定画面は従来どおり */
+@media (orientation:landscape) and (max-height:600px){
+  #tr.on{
+    display:grid;
+    grid-template-columns:minmax(190px,.78fr) minmax(0,1.22fr);
+    grid-template-rows:auto auto auto minmax(0,1fr) auto auto;
+    grid-template-areas:"top top" "cnt stage" "bar stage" "mv stage" "banner banner" "ctl ctl";
+    gap:4px 18px;
+    width:100%;max-width:none;min-height:100dvh;height:100dvh;overflow:hidden;
+    padding:calc(6px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  }
+  #tr .top{grid-area:top;font-size:13px;}
+  #tr .cnt{grid-area:cnt;font-size:clamp(25px,5.5vh,34px);margin:0;align-self:end;}
+  #tr .barw{grid-area:bar;align-self:start;}
+  #tr #mv{grid-area:mv;align-self:center;justify-self:stretch;min-width:0;min-height:54px;margin:0;padding:4px 8px;font-size:clamp(16px,3.5vh,21px);}
+  #tr #mv small{font-size:11px;}
+  #tr .stage{grid-area:stage;min-height:0;min-width:0;padding:0;gap:2px;display:grid;grid-template-columns:minmax(100px,.72fr) minmax(0,1.28fr);grid-template-rows:auto auto auto auto;align-content:center;justify-items:center;}
+  #tr #fig{grid-column:1;grid-row:1 / 5;display:flex;align-items:center;justify-content:center;min-width:0;}
+  #tr #fig svg{height:min(48dvh,270px);max-width:100%;width:auto;}
+  #tr #tag{grid-column:2;grid-row:1;align-self:end;font-size:clamp(23px,5.2vh,36px);line-height:1.05;}
+  #tr #ja{grid-column:2;grid-row:2;font-size:clamp(13px,2.8vh,19px);line-height:1.3;}
+  #tr #big{grid-column:2;grid-row:3;font-size:clamp(38px,10vh,76px);}
+  #tr #big.mv{font-size:clamp(38px,9vh,68px);}
+  #tr #big.word{font-size:clamp(23px,5.5vh,42px);}
+  #tr #big.throw{font-size:clamp(36px,8vh,62px);}
+  #tr #sub{grid-column:2;grid-row:4;font-size:11px;min-height:0;line-height:1.25;}
+  #tr .banner{grid-area:banner;font-size:14px;}
+  #tr .ctl{grid-area:ctl;margin:0;gap:8px;}
+  #tr .ctl button{min-height:clamp(46px,12vh,58px);font-size:clamp(15px,3.4vh,18px);padding:0 10px;}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -71,7 +101,7 @@ dt{color:var(--mute)}dd{margin:0;font-weight:800;font-size:19px}
 <!-- A: HOME -->
 <main id="home" class="screen on">
   <h1>THROWING LAB</h1>
-  <p class="lead">ウォーターボールの素振りを、1球ずつ「どこへ動いて、どこを狙うか」を決めて。アプリは合図と進行だけを管理します（素振りの検知・フォーム判定はしません）。</p>
+  <p class="lead">投げる動作の素振りを、1球ずつ「どこへ動いて、どこを狙うか」を決めて。アプリは合図と進行だけを管理します（素振りの検知・フォーム判定はしません）。</p>
   <div id="orderWrap"><div class="sec">コースの出し方</div><div class="seg" id="segOrder"></div></div>
   <div class="sec">投げ方（光の軌跡）</div>
   <div class="seg" id="segThrow"></div>
@@ -81,7 +111,7 @@ dt{color:var(--mute)}dd{margin:0;font-weight:800;font-size:19px}
   <div id="settings"></div>
   <button class="ghost" id="btnSound" style="margin-top:14px">🔊 音を確認する</button>
   <button class="primary" id="btnStart">スタート</button>
-  <p class="note">・ウォーターボールは満水にせず、軽い状態で使おう。<br>・痛みや違和感があるときは、すぐにやめて指導者に伝えよう。<br>・疲れてフォームが崩れたら、無理に続けず休もう。<br>・移動は小さなステップで。ジャンプや急な方向転換はしない。移動のあとは姿勢を整えてから投げよう。<br>・球数やスピードを競うためのアプリではありません。設定値は目安で、安全を保証するものではありません。</p>
+  <p class="note">・痛みや違和感があるときは、すぐにやめて指導者に伝えよう。<br>・疲れてフォームが崩れたら、無理に続けず休もう。<br>・移動は小さなステップで。ジャンプや急な方向転換はしない。移動のあとは姿勢を整えてから投げよう。<br>・球数やスピードを競うためのアプリではありません。設定値は目安で、安全を保証するものではありません。</p>
 </main>
 
 <!-- B: TRAINING -->
