@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>THROWING LAB</title>
 <style>
 :root{--bg:#0d1117;--panel:#171d28;--line:#2a3342;--text:#f2f5f9;--mute:#8d99ab;--acc:#3ad1c5;--go:#ffe14a;--danger:#ff6b6b}
@@ -131,6 +133,7 @@ dt{color:var(--mute)}dd{margin:0;font-weight:800;font-size:19px}
   <div class="ctl">
     <button id="btnPause">一時停止</button>
     <button id="btnSkip" style="display:none">休憩をスキップ</button>
+    <button id="btnFullscreen" aria-label="全画面表示に切り替え">全画面表示</button>
     <button id="btnQuit">終了</button>
   </div>
 </main>
@@ -497,6 +500,23 @@ function advance(){
 }
 function setPaused(v){S.paused=v;S.last=performance.now();render();fxPause(v)}
 $('btnPause').onclick=()=>setPaused(!S.paused);
+async function toggleFullscreen(){
+ try{
+  if(document.fullscreenElement){await document.exitFullscreen();return}
+  if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen({navigationUI:'hide'});}
+  else{alert('このブラウザではボタンからの全画面表示に対応していません。ブラウザのメニューから「ホーム画面に追加」し、ホーム画面のアイコンから起動すると、ブラウザ上部を隠せる場合があります。');}
+ }catch(e){
+  alert('全画面表示にできませんでした。ブラウザの制限の可能性があります。ホーム画面に追加して、アイコンから起動する方法を試してください。');
+ }
+}
+function updateFullscreenButton(){
+ const b=$('btnFullscreen');if(!b)return;
+ const active=!!document.fullscreenElement;
+ b.textContent=active?'全画面解除':'全画面表示';
+ b.setAttribute('aria-label',active?'全画面表示を解除':'全画面表示に切り替え');
+}
+$('btnFullscreen').onclick=toggleFullscreen;
+document.addEventListener('fullscreenchange',updateFullscreenButton);
 $('btnSkip').onclick=()=>{if(S&&S.phase==='rest')S.t=S.dur};
 $('btnQuit').onclick=()=>{S.wasPaused=S.paused;setPaused(true);$('modal').classList.add('on')};
 $('mNo').onclick=()=>{$('modal').classList.remove('on');if(!S.wasPaused)setPaused(false)};
