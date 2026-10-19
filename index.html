@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>THROWING LAB</title>
+<style>
+:root{--bg:#0d1117;--panel:#171d28;--line:#2a3342;--text:#f2f5f9;--mute:#8d99ab;--acc:#3ad1c5;--go:#ffe14a;--danger:#ff6b6b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif}
+button{font:inherit;color:inherit;border:0;border-radius:14px;min-height:52px;padding:0 18px;background:var(--panel);cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.screen{display:none;min-height:100dvh;padding:calc(14px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;flex-direction:column}
+.screen.on{display:flex}
+h1{font-size:28px;letter-spacing:.12em;margin:6px 0 2px;font-weight:800}
+.lead{color:var(--mute);font-size:14px;margin:0 0 16px;line-height:1.6}
+.seg{display:flex;gap:8px;margin:8px 0}
+.seg button{flex:1;border:2px solid var(--line);font-weight:700}
+.seg button.sel{border-color:var(--acc);background:#10302f;color:var(--acc)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row label{font-size:15px}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:48px;padding:0;font-size:22px;font-weight:800}
+.step output{min-width:64px;text-align:center;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.sec{font-size:13px;color:var(--mute);margin:18px 0 4px}
+.note{font-size:12.5px;color:var(--mute);line-height:1.7;margin:14px 0}
+.primary{background:var(--acc);color:#06201e;font-weight:800;font-size:20px;min-height:64px;margin-top:8px}
+.ghost{border:2px solid var(--line);background:transparent}
+/* training */
+body{transition:background .15s}
+body.go{background:radial-gradient(ellipse at 50% 58%,#0c1c33 0,#050911 62%,#02040a 100%)}
+#tr{background:var(--bg);transition:background .15s}
+#tr.go{background:transparent}
+#tr.go #big{color:var(--go);text-shadow:0 0 28px rgba(255,225,74,.55)}
+#tr.go #tag{text-shadow:0 0 16px rgba(58,209,197,.6)}
+#fxl{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;display:none}
+.top{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--mute)}
+.cnt{font-size:34px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;text-align:center;margin:6px 0 2px}
+.barw{height:12px;background:var(--panel);border-radius:6px;overflow:hidden}
+#bar{height:100%;width:0;background:var(--acc)}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:6px 0}
+#mv{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:center;min-height:62px;min-width:min(100%,300px);margin:8px 0 0;background:#3a2a10;border:2px solid #ff9f43;color:#ffb86b;border-radius:12px;padding:4px 16px;font-weight:800;font-size:22px;letter-spacing:.06em;line-height:1.3}
+#mv small{font-size:12.5px;color:#e6c79f;font-weight:600;letter-spacing:0}
+#tag{min-height:1.2em;font-size:38px;font-weight:800;letter-spacing:.08em;color:var(--acc)}
+#ja{min-height:1.4em;font-size:20px;line-height:1.5;font-weight:600;max-width:20em}
+#fig svg{height:min(36dvh,310px);width:auto;display:block}
+#big{font-size:min(26vw,130px);line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+#big.mv{font-size:min(20vw,96px);color:#ffb86b}
+#big.word{font-size:min(15vw,72px);color:var(--mute);letter-spacing:.1em}
+#big.throw{font-size:min(18vw,88px);letter-spacing:.02em}
+#sub{font-size:14px;color:var(--mute);min-height:1.4em}
+.ctl{display:flex;gap:10px;margin-top:8px}
+.ctl button{flex:1;min-height:64px;font-size:18px;font-weight:700}
+#tr.paused #big{opacity:.35}
+.banner{display:none;text-align:center;font-weight:800;color:var(--acc);font-size:18px}
+#tr.paused .banner{display:block}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:24px;z-index:5}
+#modal.on{display:flex}
+.box{background:var(--panel);border-radius:18px;padding:22px;max-width:360px;width:100%}
+.box p{margin:0 0 16px;font-size:17px;line-height:1.6}
+.box .ctl button{min-height:56px}
+dl{margin:10px 0 18px}
+dl div{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+dt{color:var(--mute)}dd{margin:0;font-weight:800;font-size:19px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- A: HOME -->
+<main id="home" class="screen on">
+  <h1>THROWING LAB</h1>
+  <p class="lead">ウォーターボールの素振りを、1球ずつ「どこへ動いて、どこを狙うか」を決めて。アプリは合図と進行だけを管理します（素振りの検知・フォーム判定はしません）。</p>
+  <div id="orderWrap"><div class="sec">コースの出し方</div><div class="seg" id="segOrder"></div></div>
+  <div class="sec">投げ方（光の軌跡）</div>
+  <div class="seg" id="segThrow"></div>
+  <div class="sec">間隔の種類</div>
+  <div class="seg" id="segRand"></div>
+  <div class="sec">設定</div>
+  <div id="settings"></div>
+  <button class="ghost" id="btnSound" style="margin-top:14px">🔊 音を確認する</button>
+  <button class="primary" id="btnStart">スタート</button>
+  <p class="note">・ウォーターボールは満水にせず、軽い状態で使おう。<br>・痛みや違和感があるときは、すぐにやめて指導者に伝えよう。<br>・疲れてフォームが崩れたら、無理に続けず休もう。<br>・移動は小さなステップで。ジャンプや急な方向転換はしない。移動のあとは姿勢を整えてから投げよう。<br>・球数やスピードを競うためのアプリではありません。設定値は目安で、安全を保証するものではありません。</p>
+</main>
+
+<!-- B: TRAINING -->
+<main id="tr" class="screen">
+  <div class="top"><span id="hMode"></span><span id="hSet"></span></div>
+  <div class="cnt" id="cnt">00 / 30</div>
+  <div class="barw"><div id="bar"></div></div>
+  <div id="mv"></div>
+  <div class="stage">
+    <div id="fig"></div>
+    <div id="tag"></div>
+    <div id="ja"></div>
+    <div id="big"></div>
+    <div id="sub"></div>
+  </div>
+  <div class="banner">一時停止中</div>
+  <div class="ctl">
+    <button id="btnPause">一時停止</button>
+    <button id="btnSkip" style="display:none">休憩をスキップ</button>
+    <button id="btnQuit">終了</button>
+  </div>
+</main>
+
+<!-- C: END -->
+<main id="end" class="screen">
+  <h1 id="endTitle">おつかれさま</h1>
+  <p class="lead">アプリが出した合図の記録です。実際に投げた回数ではありません。</p>
+  <dl>
+    <div><dt>練習モード</dt><dd id="eMode"></dd></div>
+    <div><dt>合図実施回数</dt><dd id="eDone"></dd></div>
+    <div><dt>目標回数</dt><dd id="eTarget"></dd></div>
+    <div><dt>経過時間</dt><dd id="eTime"></dd></div>
+  </dl>
+  <p class="note">痛みや違和感がないか、体の様子を確認しよう。水分もとろう。</p>
+  <button class="primary" id="btnAgain">もう一度練習する</button>
+  <button class="ghost" id="btnHome" style="margin-top:10px;min-height:60px">ホームへ戻る</button>
+</main>
+
+<canvas id="fxl"></canvas>
+<div id="modal"><div class="box"><p>練習を終了しますか？<br><small style="color:var(--mute)">ここまでの合図回数が記録されます。</small></p>
+<div class="ctl"><button id="mNo" class="ghost">続ける</button><button id="mYes" style="background:var(--danger);color:#200">終了する</button></div></div></div>
+
+<script>
+"use strict";
+/* ============ データ定義（ここを編集するとコースを追加できます） ============ */
+// すべて「投げる選手から見た」左右。図は投げる選手が相手を正面から見た構図で、図の左側＝選手の左。
+// x,y は図(viewBox 200x300)上のターゲット位置。
+// すべて「投げる選手から見た」左右。図は投げる選手が相手を正面から見た構図で、図の左側＝選手の左。
+// x,y は図(viewBox 200x300)上のターゲット位置。
+const COURSES=[
+ {id:'LEFT',     label:'LEFT',     ja:'自分から見て左側を狙おう',       x:48, y:150},
+ {id:'RIGHT',    label:'RIGHT',    ja:'自分から見て右側を狙おう',       x:152,y:150},
+ {id:'CHEST',    label:'CHEST',    ja:'相手の胸を狙おう',               x:100,y:112},
+ {id:'LOW LEFT', label:'LOW LEFT', ja:'自分から見て左側の足元を狙おう', x:66, y:240},
+ {id:'LOW RIGHT',label:'LOW RIGHT',ja:'自分から見て右側の足元を狙おう', x:134,y:240}
+];
+// 移動指示（動くのは投げる選手。相手の人形は動かさない）。投球コースとは独立。
+const MOVES=[
+ {id:'STAY', label:'● その場で構える', ja:'STAY'},
+ {id:'LEFT', label:'← 自分が左へ移動', ja:'MOVE LEFT ・小さなステップで'},
+ {id:'RIGHT',label:'自分が右へ移動 →', ja:'MOVE RIGHT ・小さなステップで'}
+];
+const MOVE_SEC=3,STAY_SEC=2,SETTLE_SEC=2.5; // 移動の表示時間／その場の表示時間／移動後に姿勢を整える時間
+// 順番練習用：全組み合わせ（移動×コース）を偏りなく一巡する並び
+const SEQ=(()=>{const C=COURSES.length,M=MOVES.length,a=[];
+ for(let i=0;i<C*M;i++){const c=i%C,b=Math.floor(i/C);a.push({move:MOVES[(c+b)%M],course:COURSES[c]})}return a})();
+// 設定項目（if を付けると条件付き表示）
+const SETTINGS=[
+ {k:'target', l:'目標回数',       min:5,max:60,step:5,u:'球'},
+ {k:'setSize',l:'1セットの球数',  min:5,max:15,step:5,u:'球'},
+ {k:'count',  l:'カウントダウン', min:3,max:5, step:1,u:'秒'},
+ {k:'gap',    l:'合図までの間隔', min:3,max:15,step:1,u:'秒',if:c=>c.rand==='fixed'},
+ {k:'gmin',   l:'間隔（最短）',   min:3,max:15,step:1,u:'秒',if:c=>c.rand==='random'},
+ {k:'gmax',   l:'間隔（最長）',   min:3,max:15,step:1,u:'秒',if:c=>c.rand==='random'},
+ {k:'rest',   l:'セット間の休息', min:10,max:120,step:10,u:'秒'}
+];
+const DEF={throwType:'pass',order:'seq',rand:'fixed',target:30,setSize:10,count:3,gap:6,gmin:4,gmax:10,rest:30};
+const THROW_SEC=2.2; // THROW!表示＋光の演出（最長約1.95秒）が収まる長さ
+// ===== 光の演出の設定（画面全体の専用キャンバスに描く） =====
+// speeds: 演出速度の候補（秒・毎回ランダムに選択。実際の球速ではない） / ex: 収束の加速 / glow: 発光 / tail: 残像
+// curv: 筋の曲がり / flash: 開始フラッシュ / ring: 到達時の衝撃波の大きさ / extra: 手前の筋の追加数
+const THROW_TYPES={
+ pass:  {label:'パス',        path:'direct',speeds:[.8,.95,1.1], ex:1.5,glow:.8, tail:.30,curv:.25,flash:.45,ring:.22,extra:0},
+ bounce:{label:'ワンバウンド', path:'bounce',speeds:[1.2,1.35,1.5],ex:1.5,glow:.8, tail:.28,curv:.2, flash:.45,ring:.22,extra:0},
+ attack:{label:'アタック',    path:'direct',speeds:[.3,.4,.5],    ex:2.4,glow:1.4,tail:.50,curv:.04,flash:.8, ring:.32,extra:5}
+};
+const BOUNCE_AT=.62,IMPACT_SEC=.45; // バウンド地点までの移動時間の割合／到達後の発光時間
+
+/* ============ ユーティリティ ============ */
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+let cfg=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem('throwingLab')||'null');if(s)Object.keys(DEF).forEach(k=>{if(k in s)cfg[k]=s[k]});}catch(e){}
+function save(){try{localStorage.setItem('throwingLab',JSON.stringify(cfg))}catch(e){}}
+function show(id){['home','tr','end'].forEach(x=>$(x).classList.toggle('on',x===id));window.scrollTo(0,0)}
+
+/* ============ 音（ブラウザ内で生成） ============ */
+let AC=null;
+function initAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){AC=null}}
+function beep(f,d,type){
+ if(!AC)return;
+ try{const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;
+  o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.5,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+0.02);}catch(e){}
+}
+
+/* ============ ホーム画面 ============ */
+function seg(el,key,opts){
+ el.innerHTML=opts.map(o=>`<button data-k="${key}" data-v="${o[0]}" class="${cfg[key]===o[0]?'sel':''}">${o[1]}</button>`).join('');
+}
+function renderHome(){
+ seg($('segOrder'),'order',[['seq','順番に'],['random','ランダム']]);
+
+ seg($('segThrow'),'throwType',Object.keys(THROW_TYPES).map(k=>[k,THROW_TYPES[k].label]));
+ seg($('segRand'),'rand',[['fixed','固定'],['random','ランダム']]);
+ $('settings').innerHTML=SETTINGS.filter(s=>!s.if||s.if(cfg)).map(s=>
+  `<div class="row"><label>${s.l}</label><div class="step"><button data-s="${s.k}" data-d="-1" aria-label="${s.l}を減らす">−</button><output>${cfg[s.k]}${s.u}</output><button data-s="${s.k}" data-d="1" aria-label="${s.l}を増やす">＋</button></div></div>`).join('');
+}
+function fixCfg(changed){
+ if(!THROW_TYPES[cfg.throwType])cfg.throwType=DEF.throwType;
+ SETTINGS.forEach(s=>{cfg[s.k]=clamp(Math.round(+cfg[s.k]||DEF[s.k]),s.min,s.max)});
+ if(cfg.gmin>cfg.gmax){if(changed==='gmax')cfg.gmin=cfg.gmax;else cfg.gmax=cfg.gmin}
+}
+$('home').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.k){cfg[b.dataset.k]=b.dataset.v}
+ else if(b.dataset.s){const s=SETTINGS.find(x=>x.k===b.dataset.s);cfg[s.k]=+cfg[s.k]+(+b.dataset.d)*s.step;fixCfg(s.k)}
+ else return;
+ save();renderHome();
+});
+$('btnSound').onclick=()=>{initAudio();beep(660,.15);setTimeout(()=>beep(1100,.4,'square'),350)};
+$('btnStart').onclick=()=>{initAudio();startTraining()};
+
+/* ============ トレーニング本体 ============ */
+let S=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function pickCombo(){
+ if(cfg.order==='seq')return SEQ[S.seqI++%SEQ.length];
+ if(!S.bag.length){S.bag=shuffle(SEQ.slice());const n=S.bag.length-1;
+  if(S.lastKey&&S.bag[n].move.id+'|'+S.bag[n].course.id===S.lastKey)[S.bag[n],S.bag[0]]=[S.bag[0],S.bag[n]]}
+ return S.bag.pop();
+}
+function gapTime(){return cfg.rand==='fixed'?cfg.gap:cfg.gmin+Math.random()*(cfg.gmax-cfg.gmin)}
+// o: {course?, move?, arrow?} 人形は常に中央に固定  図の左側＝投げる選手の左
+function figSVG(o){
+ const B='#3b475b',A='#566580',O='#ff9f43',c=o.course;
+ let arrow='',target='';
+ if(o.arrow){
+  if(o.move==='LEFT')arrow=`<line x1="150" y1="316" x2="66" y2="316" stroke="${O}" stroke-width="12" stroke-linecap="round"/><polygon points="24,316 74,288 74,344" fill="${O}"/>`;
+  else if(o.move==='RIGHT')arrow=`<line x1="50" y1="316" x2="134" y2="316" stroke="${O}" stroke-width="12" stroke-linecap="round"/><polygon points="176,316 126,288 126,344" fill="${O}"/>`;
+  else arrow=`<ellipse cx="100" cy="316" rx="44" ry="13" fill="none" stroke="${O}" stroke-width="6"/><circle cx="100" cy="316" r="8" fill="${O}"/>`;
+ }
+ if(c)target=`<defs><filter id="tgb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>
+ <circle cx="${c.x}" cy="${c.y}" r="32" fill="#3ad1c5" fill-opacity=".14"/>
+ <circle cx="${c.x}" cy="${c.y}" r="32" fill="none" stroke="#3ad1c5" stroke-width="8" opacity=".6" filter="url(#tgb)"/>
+ <circle cx="${c.x}" cy="${c.y}" r="32" fill="none" stroke="#0d1117" stroke-width="8"/>
+ <circle cx="${c.x}" cy="${c.y}" r="32" fill="none" stroke="#3ad1c5" stroke-width="4.3"/>
+ <circle cx="${c.x}" cy="${c.y}" r="23" fill="none" stroke="#7ff3ea" stroke-width="1.3" stroke-opacity=".7"/>
+ <circle cx="${c.x}" cy="${c.y}" r="16" fill="#7ff3ea" stroke="#0d1117" stroke-width="2.2"/>
+ <circle cx="${c.x}" cy="${c.y}" r="6.5" fill="#fff"/>`;
+  return `<svg viewBox="0 0 200 348" role="img" aria-label="${c?c.ja:'移動の指示'}">
+ <text x="6" y="14" font-size="13" font-weight="700" fill="#8d99ab">左</text>
+ <text x="194" y="14" font-size="13" font-weight="700" fill="#8d99ab" text-anchor="end">右</text>
+ <g transform="translate(100 173) scale(1.4) translate(-100 -158)">
+ <ellipse cx="100" cy="287" rx="72" ry="7" fill="#06090d"/>
+ <g fill="${B}" stroke="${B}" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="86,160 62,214 68,266" fill="none" stroke-width="23"/>
+  <polyline points="114,160 138,214 132,266" fill="none" stroke-width="23"/>
+  <ellipse cx="60" cy="278" rx="18" ry="7" stroke="none"/><ellipse cx="140" cy="278" rx="18" ry="7" stroke="none"/>
+  <path d="M72 86 Q100 76 128 86 L123 158 Q100 170 77 158 Z" stroke-width="6"/>
+  <rect x="92" y="68" width="16" height="16" stroke="none"/>
+  <circle cx="100" cy="55" r="17" stroke="none"/>
+  <g fill="none" stroke="${A}" stroke-width="13">
+   <polyline points="74,92 52,128 80,115"/><polyline points="126,92 148,128 120,115"/></g>
+  <g fill="${A}" stroke="none"><circle cx="82" cy="114" r="8"/><circle cx="118" cy="114" r="8"/></g>
+ </g></g>
+ ${arrow}${target}</svg>`;
+}
+/* ============ 光の演出（THROW!の直後・画面全体） ============ */
+// 人形SVGとは独立した全画面キャンバスに描く。的の位置は図の座標(viewBox 200x348)から画面座標へ変換する。
+// 時間は一時停止で止まる専用クロック(S.fx.t)で進める。
+const CV=()=>document.getElementById('fxl');
+function clearFx(){
+ if(S&&S.raf){cancelAnimationFrame(S.raf);S.raf=0}
+ if(S)S.fx=null;
+ const cv=CV();if(cv){const x=cv.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);cv.style.display='none'}
+}
+function figMap(){ // 図(200x348)の座標 → 画面座標
+ const r=$('fig').querySelector('svg').getBoundingClientRect();
+ const sc=Math.min(r.width/200,r.height/348),ox=r.left+(r.width-200*sc)/2,oy=r.top+(r.height-348*sc)/2;
+ const f=(x,y)=>({x:ox+x*sc,y:oy+y*sc});f.sc=sc;return f;
+}
+function makeLeg(a,b,curv,up){ // 2次ベジェ。upを指定すると上に膨らむ弧
+ const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,k=curv*(Math.random()-.5)*2;
+ return {a,b,c:up?{x:mx,y:Math.min(a.y,b.y)-up}:{x:mx-dy*k,y:my+dx*k}};
+}
+function startFx(){
+ const cv=CV(),svg=$('fig').querySelector('svg');if(!cv||!svg||!S.cur)return;
+ const ty=THROW_TYPES[S.cfg.throwType]||THROW_TYPES.pass,c=S.cur.course,bounce=ty.path==='bounce';
+ const W=window.innerWidth,H=window.innerHeight,dpr=Math.min(window.devicePixelRatio||1,2),U=Math.min(W,H),R=Math.random;
+ cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.display='block';
+ const map=figMap(),T=map(c.x,c.y);
+ const dir=({LEFT:-1,RIGHT:1}[S.cur.move.id]||0),dur=ty.speeds[Math.floor(R()*ty.speeds.length)];
+ const cx=W/2+dir*W*.38; // 移動後の選手の位置＝仮想の発射位置。STAYは中央、MOVEは左右へ大きくずらす
+ const O={x:cx,y:H*1.06};
+ // バウンド地点は人形の足元ではなく、発射位置から的までの軌道上の約62%地点に置く。
+ // これにより、選手と相手の間の床で一度弾み、その後に的へ向かう距離感を表現する。
+ const Fp={x:O.x+(T.x-O.x)*.62,y:O.y+(T.y-O.y)*.62},C1=bounce?Fp:T;
+ const clampP=p=>({x:Math.min(W*.96,Math.max(W*.04,p.x)),y:Math.min(H*.96,Math.max(H*.04,p.y))});
+ const legs=(o,cs)=>bounce?[makeLeg(o,Fp,ty.curv*cs,H*.035),makeLeg(Fp,T,ty.curv*cs,H*.10)]:[makeLeg(o,T,ty.curv*cs)];
+ const st=[];
+ const add=(o,w,tail,dt,arr,cs=1)=>st.push({legs:legs(o,cs),w,tail,dt:dt*dur,start:Math.max(0,(arr-dt)*dur)});
+ add(O,U*.026,ty.tail*1.3,1,1,.35); // 主筋：移動後の位置から必ず的へ向かう
+ const nNear=9+ty.extra;
+ for(let i=0;i<nNear;i++){ // 手前を横切る太く速い筋（画面の下端・左右端から）
+  let o;
+  if(R()<.5)o={x:cx+(R()-.5)*W*.6,y:H*(1.03+R()*.08)};
+  else{const left=R()<(dir<0?.88:dir>0?.12:.5);o={x:left?-W*.04:W*1.04,y:H*(.5+R()*.5)}}
+  add(o,U*(.011+R()*.012),ty.tail*(.8+R()*.5),.42+R()*.28,.85+R()*.15);
+ }
+ for(let i=0;i<12;i++){ // 遠くから走る細く短い筋（収束点の周囲から）
+  const a=R()*Math.PI*2,r=U*(.25+R()*.4);
+  add(clampP({x:C1.x+Math.cos(a)*r,y:C1.y+Math.sin(a)*r}),U*(.004+R()*.004),ty.tail*.7,.34+R()*.26,.8+R()*.2);
+ }
+ S.fx={O,tr:32*map.sc,ty,t:0,dur,ctx:cv.getContext('2d'),W,H,dpr,U,T,Fp,st,bounce,last:performance.now()};
+ drawFx(0);
+ S.raf=requestAnimationFrame(fxLoop);
+}
+function fxLoop(now){
+ if(!S)return;S.raf=0;const F=S.fx;
+ if(!F||!S.run||S.paused||S.phase!=='throw')return;
+ const dt=Math.min(Math.max((now-F.last)/1000,0),.1);F.last=now;F.t+=dt;
+ drawFx(F.t);
+ if(F.t<F.dur+IMPACT_SEC)S.raf=requestAnimationFrame(fxLoop);
+}
+function fxPause(v){ // 一時停止で止め、再開で同じ位置から続ける（二重起動しない）
+ const F=S.fx;if(!F)return;
+ if(v){if(S.raf){cancelAnimationFrame(S.raf);S.raf=0}}
+ else if(!S.raf&&S.phase==='throw'&&F.t<F.dur+IMPACT_SEC){F.last=performance.now();S.raf=requestAnimationFrame(fxLoop)}
+}
+function bez(l,s){const u=1-s;return {x:u*u*l.a.x+2*u*s*l.c.x+s*s*l.b.x,y:u*u*l.a.y+2*u*s*l.c.y+s*s*l.b.y}}
+function fxPos(F,st,p){ // 進行度p(0〜1)での画面位置。ワンバウンドは接地(落下は加速)→跳ね返り(減速)
+ p=Math.min(1,Math.max(0,p));
+ if(F.bounce){const u=BOUNCE_AT;return p<u?bez(st.legs[0],Math.pow(p/u,1.8)):bez(st.legs[1],1-Math.pow(1-(p-u)/(1-u),2))}
+ return bez(st.legs[0],Math.pow(p,F.ty.ex));
+}
+function radial(ctx,x,y,r,rgb,a){
+ const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(1,`rgba(${rgb},0)`);
+ ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
+}
+function drawFx(t){
+ const F=S.fx,ctx=F.ctx,ty=F.ty,W=F.W,H=F.H,U=F.U,atk=ty.ex>2;
+ ctx.setTransform(F.dpr,0,0,F.dpr,0,0);ctx.clearRect(0,0,W,H);
+ ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+ const p=Math.min(1,t/F.dur);
+ if(t<.2){const a=Math.pow(1-t/.2,2)*ty.flash;ctx.fillStyle=`rgba(190,235,255,${a})`;ctx.fillRect(0,0,W,H)} // THROW!の瞬間のフラッシュ
+ if(t<.35)radial(ctx,F.O.x,F.O.y,U*.3,'150,230,255',(1-t/.35)*.8*ty.glow); // 発射位置の閃光
+ const tgt=F.bounce&&p<BOUNCE_AT?F.Fp:F.T; // 収束点の光だまり
+ radial(ctx,tgt.x,tgt.y,U*.45,'90,220,255',.42*p*p*ty.glow);
+ for(const st of F.st){
+  const pr=(t-st.start)/st.dt;if(pr<=0)continue;
+  const ph=Math.min(1,pr),pt=Math.min(1,pr-st.tail);if(pt>=1)continue;
+  const lo=Math.max(0,pt),n=7,w=st.w*(1-.5*ph);
+  let prev=fxPos(F,st,lo);
+  for(let j=1;j<=n;j++){
+   const cur=fxPos(F,st,lo+(ph-lo)*j/n),a=Math.pow(j/n,1.3);
+   ctx.beginPath();ctx.moveTo(prev.x,prev.y);ctx.lineTo(cur.x,cur.y);
+   ctx.strokeStyle=`rgba(30,140,255,${a*.30*ty.glow})`;ctx.lineWidth=w*3.2;ctx.stroke();
+   ctx.strokeStyle=`rgba(80,230,255,${a*.75})`;ctx.lineWidth=w*1.4;ctx.stroke();
+   ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=w*.5;ctx.stroke();
+   prev=cur;
+  }
+  if(pr<1)radial(ctx,prev.x,prev.y,w*3.5,'255,255,255',.9); // 先頭の輝き
+ }
+ if(F.bounce){ // 接地点：発光と床の波紋
+  const tb=F.dur*BOUNCE_AT,e=(t-tb)/.45;
+  if(e>=0&&e<1){
+   const k=1-Math.pow(1-e,2);radial(ctx,F.Fp.x,F.Fp.y,U*(.12+.1*k),'210,250,255',(1-e)*.95);
+   for(const d of [0,.18]){const q=Math.min(1,Math.max(0,e-d)/(1-d));if(e<d)continue;
+    ctx.beginPath();ctx.ellipse(F.Fp.x,F.Fp.y,U*(.04+.34*q),U*(.012+.1*q),0,0,7);
+    ctx.strokeStyle=`rgba(150,235,255,${(1-q)*.9})`;ctx.lineWidth=3;ctx.stroke()}
+  }
+ }
+ const e=(t-F.dur)/IMPACT_SEC;
+ if(e>=0&&e<1){ // 的への到達：強い発光と衝撃波
+  const k=1-Math.pow(1-e,2),R0=Math.max(U*ty.ring,F.tr*3.2);
+  radial(ctx,F.T.x,F.T.y,F.tr*1.5,'255,255,255',(1-e)*.9); // 的全体の発光
+  ctx.beginPath();ctx.arc(F.T.x,F.T.y,F.tr,0,7);ctx.strokeStyle=`rgba(210,252,255,${(1-e)})`;ctx.lineWidth=F.tr*.28;ctx.stroke();
+  radial(ctx,F.T.x,F.T.y,R0*(.5+.9*k),'225,252,255',(1-e)*(atk?1:.85));
+  for(const d of [0,.15]){if(e<d)continue;const q=(e-d)/(1-d);
+   ctx.beginPath();ctx.arc(F.T.x,F.T.y,R0*(.15+1.2*q),0,7);
+   ctx.strokeStyle=`rgba(140,235,255,${(1-q)*(atk?1:.8)})`;ctx.lineWidth=(atk?5:3)*(1-q)+1;ctx.stroke()}
+  if(atk){ctx.fillStyle=`rgba(120,220,255,${.16*(1-e)})`;ctx.fillRect(0,0,W,H)}
+ }
+ ctx.globalCompositeOperation='source-over';
+}
+function startTraining(){
+ S={run:true,paused:false,done:0,ball:0,phase:'',dur:0,t:0,elapsed:0,last:performance.now(),lastBig:null,cur:null,seqI:0,bag:[],lastKey:null,raf:0,fx:null,wasPaused:false,timer:null,lock:null,cfg:Object.assign({},cfg)};
+ show('tr');requestLock();
+ S.timer=setInterval(tick,100);
+ startPhase('move');
+}
+async function requestLock(){try{if(navigator.wakeLock)S.lock=await navigator.wakeLock.request('screen')}catch(e){}}
+function phaseStart(name,dur){S.phase=name;S.dur=dur;S.t=0;S.lastBig=null}
+function startPhase(name,dur){
+ clearFx();
+ if(name==='move'){ // 次の「移動×コース」を決める
+  S.cur=pickCombo();S.lastKey=S.cur.move.id+'|'+S.cur.course.id;S.ball=S.done+1;
+  dur=S.cur.move.id==='STAY'?STAY_SEC:MOVE_SEC;
+ }
+ phaseStart(name,dur);
+ if(name==='throw'){S.done++;beep(1100,.5,'square');try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}}
+ if(name==='move'||name==='settle'||name==='prep'||name==='rest')setInstr();
+ render();
+ if(name==='throw')startFx();
+}
+function setInstr(){
+ const p=S.phase,m=S.cur&&S.cur.move,c=S.cur&&S.cur.course;
+ let tag='',ja='',fig='',showMv=false;
+ if(p==='rest'){tag='休憩';ja='水分をとって、体の様子を確認しよう。痛みや違和感があれば、無理せず中止しよう。'}
+ else if(p==='move'){showMv=true;fig=figSVG({move:m.id,arrow:true})}
+ else if(p==='settle'){showMv=true;ja='姿勢を整えよう';fig=figSVG({})}
+ else{showMv=true;tag=c.label;ja=c.ja;fig=figSVG({course:c})} // prep〜throw: 移動指示を維持したままコースを表示
+ $('mv').innerHTML=showMv?`${m.label}<small>${m.ja}</small>`:'';
+ $('mv').style.visibility=showMv?'visible':'hidden';
+ $('tag').textContent=tag;$('ja').textContent=ja;$('fig').innerHTML=fig;
+}
+function bigText(){
+ const left=Math.max(0,S.dur-S.t);
+ switch(S.phase){
+  case 'move':return [{LEFT:'←',RIGHT:'→',STAY:'●'}[S.cur.move.id],'mv'];
+  case 'settle':return ['SET','word'];
+  case 'prep':return ['READY','word'];
+  case 'count':return [String(Math.max(1,Math.ceil(left))),''];
+  case 'throw':return ['THROW!','throw'];
+  case 'rest':return [Math.ceil(left)+'秒','word'];
+ }
+ return ['',''];
+}
+function render(){
+ const c=S.cfg,p=S.phase;
+ $('tr').classList.toggle('go',p==='throw');document.body.classList.toggle('go',p==='throw');
+ $('tr').classList.toggle('paused',S.paused);
+ $('hMode').textContent='コース練習';
+ const ball=Math.min(Math.max(S.ball,1),c.target);
+ $('hSet').textContent=p==='rest'?'セット間の休息':`セット ${Math.ceil(ball/c.setSize)} / ${Math.ceil(c.target/c.setSize)}`;
+ $('cnt').textContent=`${pad(p==='rest'?S.done:ball)} / ${pad(c.target)}`;
+ $('bar').style.width=(S.done/c.target*100)+'%';
+ $('btnSkip').style.display=p==='rest'?'block':'none';
+ $('btnPause').textContent=S.paused?'再開':'一時停止';
+ $('sub').textContent=({move:'小さなステップで。ジャンプや急な動きはしない',settle:'姿勢を整える時間です',prep:'コースをイメージ',rest:`残り ${c.target-S.done} 回`})[p]||'';
+ updateBig();
+}
+function updateBig(){
+ const [txt,cls]=bigText();
+ if(txt===S.lastBig)return;
+ if(S.phase==='count')beep(660,.12);
+ S.lastBig=txt;$('big').textContent=txt;$('big').className=cls;
+}
+function tick(){
+ if(!S||!S.run)return;
+ const now=performance.now();let dt=(now-S.last)/1000;S.last=now;
+ if(S.paused)return;
+ dt=Math.min(dt,1);S.t+=dt;S.elapsed+=dt;
+ if(S.t>=S.dur){advance();return}
+ updateBig();
+}
+function advance(){
+ const c=S.cfg;
+ switch(S.phase){
+  case 'move':if(S.cur.move.id==='STAY')startPhase('prep',gapTime());else startPhase('settle',SETTLE_SEC);break;
+  case 'settle':startPhase('prep',gapTime());break;
+  case 'prep':startPhase('count',c.count);break;
+  case 'count':startPhase('throw',THROW_SEC);break;
+  case 'throw':
+   if(S.done>=c.target)return finish(false);
+   if(S.done%c.setSize===0)startPhase('rest',c.rest);else startPhase('move');
+   break;
+  case 'rest':startPhase('move');break;
+ }
+}
+function setPaused(v){S.paused=v;S.last=performance.now();render();fxPause(v)}
+$('btnPause').onclick=()=>setPaused(!S.paused);
+$('btnSkip').onclick=()=>{if(S&&S.phase==='rest')S.t=S.dur};
+$('btnQuit').onclick=()=>{S.wasPaused=S.paused;setPaused(true);$('modal').classList.add('on')};
+$('mNo').onclick=()=>{$('modal').classList.remove('on');if(!S.wasPaused)setPaused(false)};
+$('mYes').onclick=()=>{$('modal').classList.remove('on');finish(true)};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S&&S.run&&!S.paused)setPaused(true);else if(!document.hidden&&S&&S.run&&!S.lock)requestLock()});
+
+function finish(aborted){
+ clearFx();document.body.classList.remove('go');
+ S.run=false;clearInterval(S.timer);S.timer=null;
+ try{S.lock&&S.lock.release()}catch(e){}
+ const c=S.cfg,m=Math.floor(S.elapsed/60),s=Math.floor(S.elapsed%60);
+ $('endTitle').textContent=aborted?'ここまでおつかれさま':'おつかれさま';
+ $('eMode').textContent='コース練習';
+ $('eDone').textContent=S.done+' 回';
+ $('eTarget').textContent=c.target+' 回';
+ $('eTime').textContent=`${m}分${pad(s)}秒`;
+ show('end');
+}
+$('btnAgain').onclick=()=>{initAudio();startTraining()};
+$('btnHome').onclick=()=>{renderHome();show('home')};
+
+fixCfg();renderHome();
+</script>
+</body>
+</html>
